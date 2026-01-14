@@ -1,6 +1,7 @@
 """
 AI Assistant Core - Voice Assistant Logic
 Enhanced with ChatGPT (OpenAI) + Gemini Support
+THREADING: Supports graceful shutdown via stop_requested flag (HIGH-001 Fixed)
 """
 import os
 import re
@@ -8,6 +9,25 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# HIGH-001 FIX: Global flag for graceful shutdown
+# Set this to True from external code (GUI) to stop the assistant
+_stop_requested = False
+
+def request_stop():
+    """Request the assistant to stop gracefully"""
+    global _stop_requested
+    _stop_requested = True
+    print("[CORE] Stop requested")
+
+def reset_stop():
+    """Reset stop flag (call before starting)"""
+    global _stop_requested
+    _stop_requested = False
+
+def should_stop():
+    """Check if stop has been requested"""
+    return _stop_requested
 
 # ===== FEATURE FLAGS =====
 # Set to True to enable wake word "ZEN", False to disable
@@ -115,9 +135,20 @@ def run_simple_mode():
     
     while True:
         try:
+            # HIGH-001 FIX: Check if stop was requested (e.g., from GUI)
+            if should_stop():
+                print("[EXIT] Stop requested externally - shutting down gracefully...")
+                speak("Goodbye!")
+                break
+            
             print("\n[READY] Listening...")
             # Listen for command
             command = listen()
+            
+            # Check again after listen (in case stop was requested during listening)
+            if should_stop():
+                print("[EXIT] Stop requested - shutting down...")
+                break
             
             if command:
                 print(f"[USER] You said: {command}")
@@ -136,7 +167,7 @@ def run_simple_mode():
                 print("[WARN] No speech detected or recognition failed. Try again...")
             
         except KeyboardInterrupt:
-            print("\n[EXIT] Exiting...")
+            print("\n[EXIT] Keyboard interrupt - exiting...")
             speak("Goodbye!")
             break
         except Exception as e:
@@ -433,4 +464,4 @@ def process_command(command):
 
 if __name__ == "__main__":
     run_babygirl_assistant()
-8
+
