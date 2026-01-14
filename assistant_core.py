@@ -2,6 +2,7 @@
 AI Assistant Core - Voice Assistant Logic
 """
 import os
+import re
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -282,13 +283,41 @@ def process_command(command):
     """
     command_lower = command.lower()
     
-    # Quick local commands (no AI needed)
-    if any(word in command_lower for word in ['time', 'clock']):
+    # Math calculation (check first before time check)
+    if any(word in command_lower for word in ['plus', 'minus', 'times', 'multiply', 'divide', 'into', 'calculate', 'what is']):
+        # Try to handle basic math
+        try:
+            # Pattern for simple math: "what is X operation Y"
+            math_patterns = [
+                (r'(\d+\.?\d*)\s*(?:plus|\+)\s*(\d+\.?\d*)', lambda a, b: float(a) + float(b), 'plus'),
+                (r'(\d+\.?\d*)\s*(?:minus|-)\s*(\d+\.?\d*)', lambda a, b: float(a) - float(b), 'minus'),
+                (r'(\d+\.?\d*)\s*(?:times|multiply|multiplied by|\*|into)\s*(\d+\.?\d*)', lambda a, b: float(a) * float(b), 'times'),
+                (r'(\d+\.?\d*)\s*(?:divide|divided by|/)\s*(\d+\.?\d*)', lambda a, b: float(a) / float(b) if float(b) != 0 else None, 'divided by'),
+            ]
+            
+            for pattern, operation, op_name in math_patterns:
+                match = re.search(pattern, command_lower)
+                if match:
+                    num1, num2 = match.groups()
+                    result = operation(num1, num2)
+                    if result is not None:
+                        # Format result nicely (remove .0 if it's a whole number)
+                        result_str = str(int(result)) if result == int(result) else str(result)
+                        return f"{num1} {op_name} {num2} equals {result_str}"
+                    else:
+                        return "I cannot divide by zero"
+        except Exception as e:
+            print(f"[WARN] Math calculation failed: {e}")
+            # Continue to AI if math fails
+    
+    # Time check (use more specific matching)
+    if re.search(r'\b(what|current|what\'s|whats)\s+(time|clock)\b', command_lower) or 'time is it' in command_lower:
         from datetime import datetime
         current_time = datetime.now().strftime("%I:%M %p")
         return f"The current time is {current_time}"
     
-    if any(word in command_lower for word in ['date', 'today']):
+    # Date check
+    if any(phrase in command_lower for phrase in ['what date', "today's date", 'what is today', 'current date']):
         from datetime import datetime
         current_date = datetime.now().strftime("%B %d, %Y")
         return f"Today is {current_date}"
@@ -311,7 +340,7 @@ def process_command(command):
         return random.choice(jokes)
     
     if 'help' in command_lower:
-        return "I can answer questions, tell you the time, date, jokes, and chat with you. What would you like to know?"
+        return "I can answer questions, do math, tell you the time, date, jokes, and chat with you. What would you like to know?"
     
     # Default response
     return f"I heard you say: {command}. I'm not sure how to respond to that right now."
