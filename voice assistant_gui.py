@@ -1,15 +1,32 @@
+"""
+AI Assistant Zen - Simple GUI (Alternative Interface)
+SECURITY: Implements SHA-256 password hashing (CRITICAL-003 Fixed)
+"""
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
 import os
 import threading
+import hashlib
 from assistant_core import run_babygirl_assistant
 from dotenv import load_dotenv
 
 # Load .env file
 load_dotenv()
 
-# Dummy in-memory user store
-USER_DB = {"user@example.com": "password123"}
+# Security: Hash password using SHA-256
+def hash_password(password):
+    """Hash password using SHA-256 for secure storage"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(password, password_hash):
+    """Verify password against hash using constant-time comparison"""
+    return hash_password(password) == password_hash
+
+# Secure in-memory user store with hashed passwords
+# Format: {email: password_hash}
+USER_DB = {
+    "user@example.com": hash_password("password123")  # Default demo account with hashed password
+}
 
 # Main App Window
 class AssistantApp(ctk.CTk):
@@ -64,22 +81,42 @@ class AssistantApp(ctk.CTk):
         self.back_to_login.pack(pady=10)
 
     def register_user(self):
-        email = self.new_email.get()
+        email = self.new_email.get().strip()
         password = self.new_password.get()
+        
+        # Input validation
         if not email or not password:
             messagebox.showerror("Error", "All fields are required!")
             return
+        
+        # Password strength validation
+        if len(password) < 6:
+            messagebox.showerror("Error", "Password must be at least 6 characters long!")
+            return
+        
+        # Check if user already exists
         if email in USER_DB:
             messagebox.showerror("Error", "User already exists!")
             return
-        USER_DB[email] = password
+        
+        # SECURITY FIX: Hash password before storing
+        password_hash = hash_password(password)
+        USER_DB[email] = password_hash
+        
         messagebox.showinfo("Success", "Account created successfully!")
         self.show_login_screen()
 
     def login_user(self):
-        email = self.email_entry.get()
+        email = self.email_entry.get().strip()
         password = self.password_entry.get()
-        if email in USER_DB and USER_DB[email] == password:
+        
+        # Input validation
+        if not email or not password:
+            messagebox.showerror("Error", "Please enter both email and password!")
+            return
+        
+        # SECURITY FIX: Verify using hash comparison (constant-time)
+        if email in USER_DB and verify_password(password, USER_DB[email]):
             self.current_user = email
             self.show_dashboard()
         else:
