@@ -32,83 +32,127 @@ def init_engine():
 def speak(text):
     global engine
     
+    print(f"[SPEAKING] {text}")
+    print(f"[DEBUG] USE_FRESH_ENGINE = {USE_FRESH_ENGINE}")
+    
     # Use fresh engine for each speech (more reliable on Windows)
     if USE_FRESH_ENGINE:
+        temp_engine = None
         try:
-            print(f"[SPEAKING] {text}")
+            print("[DEBUG] Creating fresh TTS engine...")
             
-            # Create fresh engine
-            temp_engine = pyttsx3.init()
+            # Create fresh engine with driver specification
+            temp_engine = pyttsx3.init('sapi5')  # Explicitly use SAPI5 on Windows
             
-            # Set voice to Zira (female)
+            print("[DEBUG] Getting voices...")
             voices = temp_engine.getProperty('voices')
+            print(f"[DEBUG] Found {len(voices)} voices")
+            
+            # Set voice - Use DAVID (male voice) as it's louder and clearer
+            voice_set = False
             for voice in voices:
-                if 'zira' in voice.name.lower():
+                if 'david' in voice.name.lower():  # Changed from 'zira' to 'david'
                     temp_engine.setProperty('voice', voice.id)
+                    print(f"[DEBUG] Using voice: {voice.name}")
+                    voice_set = True
                     break
             
+            if not voice_set and len(voices) > 0:
+                temp_engine.setProperty('voice', voices[0].id)
+                print(f"[DEBUG] Using default voice: {voices[0].name}")
+            
             # Set properties
+            print("[DEBUG] Setting speech properties...")
             temp_engine.setProperty('rate', 150)
             temp_engine.setProperty('volume', 1.0)
             
-            # Speak
+            # Speak - CRITICAL PART
+            print("[DEBUG] Adding text to speech queue...")
             temp_engine.say(text)
+            
+            print("[DEBUG] Running speech engine (this should produce sound)...")
             temp_engine.runAndWait()
             
-            # Clean up
-            del temp_engine
+            print("[OK] Speech completed successfully!")
             
-            print("[OK] Speech completed")
-            time.sleep(0.1)  # Small delay for stability
+            # Clean up
+            try:
+                del temp_engine
+            except:
+                pass
+            
+            time.sleep(0.2)  # Increased delay for stability
             return
+            
         except Exception as e:
-            print(f"[ERROR] Fresh engine error: {e}")
+            print(f"[ERROR] Fresh engine failed: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # Cleanup on error
+            if temp_engine:
+                try:
+                    del temp_engine
+                except:
+                    pass
+            
+            print("[INFO] Trying fallback method...")
             # Fall through to old method
     
-    # Original method (fallback)
+    # Fallback method (original persistent engine)
+    print("[DEBUG] Using fallback persistent engine method...")
+    
     if not engine:
+        print("[DEBUG] Engine not initialized, initializing now...")
         engine = init_engine()
     
     if not engine:
-        print(f"[WARN] TTS not available. Text output: {text}")
+        print(f"[ERROR] TTS not available. Cannot speak: {text}")
         return
     
     try:
-        print(f"[SPEAKING] {text}")
+        print(f"[DEBUG] Using persistent engine to speak...")
         
-        # Clear any pending speech
-        engine.stop()
+        # Method 1: Simple approach
+        try:
+            print("[DEBUG] Clearing speech queue...")
+            engine.stop()
+            
+            print("[DEBUG] Adding text to queue...")
+            engine.say(text)
+            
+            print("[DEBUG] Running engine...")
+            engine.runAndWait()
+            
+            print("[DEBUG] Clearing queue again...")
+            engine.stop()
+            
+            print("[OK] Speech completed (fallback method)")
+            return
+            
+        except RuntimeError as e:
+            print(f"[WARN] RuntimeError in fallback: {e}")
+            raise  # Re-raise to trigger reinit
+            
+    except Exception as e:
+        # Last resort: reinitialize and try once more
+        print(f"[ERROR] Fallback method failed: {e}")
+        print(f"[INFO] Last attempt: Reinitializing engine...")
         
-        # Add text to queue
-        engine.say(text)
-        
-        # Run and wait - this blocks until speech is done
-        engine.runAndWait()
-        
-        # Extra safety: ensure queue is cleared
-        engine.stop()
-        
-        print("[OK] Speech completed")
-    except RuntimeError as e:
-        # pyttsx3 sometimes throws RuntimeError on Windows
-        print(f"[WARN] Speech engine error: {e}")
-        print(f"[INFO] Reinitializing engine...")
-        # Force reinitialize
         engine = None
         engine = init_engine()
+        
         if engine:
             try:
-                engine.stop()
                 engine.say(text)
                 engine.runAndWait()
-                engine.stop()
-                print("[OK] Speech completed (retry)")
+                print("[OK] Speech completed (after reinit)")
             except Exception as e2:
-                print(f"[ERROR] TTS retry failed: {e2}")
-                print(f"[TEXT] {text}")
-    except Exception as e:
-        print(f"[ERROR] Speech error: {e}")
-        print(f"[TEXT] {text}")
+                print(f"[ERROR] All methods failed: {e2}")
+                print(f"[TEXT ONLY] {text}")
+        else:
+            print(f"[ERROR] Cannot initialize TTS engine")
+            print(f"[TEXT ONLY] {text}")
 
 def listen():
     r = sr.Recognizer()
