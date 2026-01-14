@@ -2,6 +2,7 @@
 AI Assistant Zen - Simple GUI (Alternative Interface)
 SECURITY: Implements SHA-256 password hashing (CRITICAL-003 Fixed)
 THREADING: Proper thread lifecycle management (HIGH-001 Fixed)
+VALIDATION: Email validation using regex
 """
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
@@ -9,11 +10,50 @@ import os
 import threading
 import hashlib
 import sys
+import re
 from assistant_core import run_babygirl_assistant, request_stop, reset_stop
 from dotenv import load_dotenv
 
 # Load .env file
 load_dotenv()
+
+# Email Validation using Regex (RFC 5322 compliant)
+def validate_email(email):
+    """
+    Validate email format using comprehensive regex pattern
+    Returns True if email is valid, False otherwise
+    """
+    # Comprehensive email validation regex (RFC 5322 compliant)
+    email_pattern = r'^[a-zA-Z0-9][a-zA-Z0-9._%+-]{0,63}@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$'
+    
+    # Additional validation checks
+    if not email or len(email) > 254:  # Max email length per RFC 5321
+        return False
+    
+    if email.count('@') != 1:  # Must have exactly one @ symbol
+        return False
+    
+    local_part, domain = email.rsplit('@', 1)
+    
+    # Local part (before @) validation
+    if len(local_part) > 64:  # Max local part length
+        return False
+    
+    if local_part.startswith('.') or local_part.endswith('.'):
+        return False
+    
+    if '..' in local_part:  # No consecutive dots
+        return False
+    
+    # Domain validation
+    if len(domain) > 253:  # Max domain length
+        return False
+    
+    if domain.startswith('-') or domain.endswith('-'):
+        return False
+    
+    # Apply regex pattern
+    return re.match(email_pattern, email) is not None
 
 # Security: Hash password using SHA-256
 def hash_password(password):
@@ -91,6 +131,19 @@ class AssistantApp(ctk.CTk):
             messagebox.showerror("Error", "All fields are required!")
             return
         
+        # EMAIL VALIDATION: Validate email format using regex
+        if not validate_email(email):
+            messagebox.showerror(
+                "Invalid Email", 
+                "Please enter a valid email address!\n\n"
+                "Examples:\n"
+                "  ✓ user@example.com\n"
+                "  ✓ name.surname@domain.co.uk\n"
+                "  ✗ invalid@\n"
+                "  ✗ @domain.com"
+            )
+            return
+        
         # Password strength validation
         if len(password) < 6:
             messagebox.showerror("Error", "Password must be at least 6 characters long!")
@@ -115,6 +168,14 @@ class AssistantApp(ctk.CTk):
         # Input validation
         if not email or not password:
             messagebox.showerror("Error", "Please enter both email and password!")
+            return
+        
+        # EMAIL VALIDATION: Validate email format using regex
+        if not validate_email(email):
+            messagebox.showerror(
+                "Invalid Email", 
+                "Please enter a valid email address!"
+            )
             return
         
         # SECURITY FIX: Verify using hash comparison (constant-time)
