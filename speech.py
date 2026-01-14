@@ -170,9 +170,11 @@ def listen():
             print("[INFO] Adjusting for background noise...")
             r.adjust_for_ambient_noise(source, duration=1)
             
-            # FIX: Increased phrase_time_limit for longer questions
+            # FIX: Balanced timeout for responsiveness and longer questions
             print("[READY] Speak your command...")
-            audio = r.listen(source, timeout=10, phrase_time_limit=30)  # Increased from 15 to 30 seconds
+            # OPTIMIZED: timeout=5s (wait for speech to start), phrase_time_limit=20s (max speech duration)
+            # This allows stop button to respond within ~7 seconds maximum
+            audio = r.listen(source, timeout=5, phrase_time_limit=20)
             
             print("[PROCESSING] Recognizing speech...")
             text = r.recognize_google(audio)

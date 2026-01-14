@@ -266,7 +266,9 @@ class AssistantApp(ctk.CTk):
         # Update UI to show stopping with helpful message
         if hasattr(self, 'status_label'):
             self.status_label.configure(
-                text="⏹️ Stopping assistant...\nWaiting for current operation to finish...\n(This may take up to 12 seconds)"
+                text="⏹️ Stopping assistant...\n" 
+                     "⚠️ If you're speaking, please STOP talking\n"
+                     "to exit faster (usually 5-8 seconds)"
             )
         if hasattr(self, 'activity_label'):
             self.activity_label.configure(text="● STOPPING", text_color="orange")
@@ -276,12 +278,26 @@ class AssistantApp(ctk.CTk):
         # Update GUI to show changes
         self.update()
         
-        # FIX: Wait for thread to finish (increased timeout for listen() blocking)
+        # OPTIMIZED: Two-stage timeout for better UX
         if self.assistant_thread and self.assistant_thread.is_alive():
             print("[GUI] Waiting for assistant thread to terminate...")
-            # INCREASED timeout from 3.0 to 12.0 seconds
-            # Reason: listen() can block for up to 10 seconds, need time for it to finish
-            self.assistant_thread.join(timeout=12.0)  
+            
+            # Stage 1: Wait 8 seconds (covers normal case - just listening)
+            self.assistant_thread.join(timeout=8.0)
+            
+            if self.assistant_thread.is_alive():
+                # Still alive - user might be speaking
+                print("[GUI] Thread still active, likely user is speaking...")
+                if hasattr(self, 'status_label'):
+                    self.status_label.configure(
+                        text="⏹️ Still stopping...\n"
+                             "⚠️ Please STOP SPEAKING immediately!\n"
+                             "Waiting for speech to end..."
+                    )
+                self.update()
+                
+                # Stage 2: Wait additional 17 seconds (max phrase_time_limit=20s total)
+                self.assistant_thread.join(timeout=17.0)  
             
             if self.assistant_thread.is_alive():
                 print("[GUI WARNING] Thread did not stop gracefully within timeout")
