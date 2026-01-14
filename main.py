@@ -1,3 +1,9 @@
+"""
+AI Assistant Zen - Main GUI Application
+SECURITY: SHA-256 password hashing, Email validation (RFC 5322)
+THREADING: Proper thread lifecycle management (HIGH-001 Fixed)
+DATABASE: SQLite for persistent user storage
+"""
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
 import os
@@ -5,7 +11,8 @@ import sqlite3
 import hashlib
 import threading
 import re
-from assistant_core import run_babygirl_assistant
+import sys
+from assistant_core import run_babygirl_assistant, request_stop, reset_stop
 from dotenv import load_dotenv
 
 # Load .env file
@@ -327,24 +334,31 @@ class AssistantApp(ctk.CTk):
         self.logout_button.pack(pady=10)
 
     def start_assistant(self):
+        """Start voice assistant in separate thread with proper lifecycle management"""
+        # HIGH-001 FIX: Reset stop flag before starting
+        reset_stop()
+        
         self.clear_window()
         
-        label = ctk.CTkLabel(
+        # Status label
+        self.status_label = ctk.CTkLabel(
             self, 
-            text="🎤 AI Assistant Zen is active...\nSay the wake word to begin", 
+            text="🎤 AI Assistant Zen is active...\nListening for your commands", 
             font=("Arial", 16)
         )
-        label.pack(pady=50)
+        self.status_label.pack(pady=30)
         
-        status_label = ctk.CTkLabel(
+        # Activity indicator
+        self.activity_label = ctk.CTkLabel(
             self, 
-            text="Status: Listening for wake word...", 
+            text="● RUNNING", 
             font=("Arial", 12),
             text_color="green"
         )
-        status_label.pack(pady=10)
-
-        stop_button = ctk.CTkButton(
+        self.activity_label.pack(pady=10)
+        
+        # Stop button
+        self.stop_button = ctk.CTkButton(
             self, 
             text="Stop Assistant", 
             command=self.stop_assistant,
@@ -352,17 +366,88 @@ class AssistantApp(ctk.CTk):
             fg_color="red",
             hover_color="darkred"
         )
-        stop_button.pack(pady=20)
+        self.stop_button.pack(pady=20)
 
-        # Run assistant in a separate thread to prevent GUI freezing
-        self.assistant_thread = threading.Thread(target=run_babygirl_assistant, daemon=True)
+        # HIGH-001 FIX: Run assistant in separate thread with proper termination support
+        # Thread is NOT daemon - we want to clean it up properly
+        self.assistant_thread = threading.Thread(
+            target=self._run_assistant_wrapper,
+            daemon=False  # Changed from True - proper cleanup required
+        )
         self.assistant_thread.start()
+        
+        print("[GUI] Assistant thread started")
+
+    def _run_assistant_wrapper(self):
+        """Wrapper to run assistant and handle exceptions"""
+        try:
+            print("[GUI] Assistant starting in thread...")
+            run_babygirl_assistant()
+        except Exception as e:
+            print(f"[GUI ERROR] Assistant thread crashed: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            print("[GUI] Assistant thread finished")
 
     def stop_assistant(self):
+        """HIGH-001 FIX: Properly stop the assistant thread"""
+        print("[GUI] Stop button clicked - initiating graceful shutdown...")
+        
+        # HIGH-001 FIX: Signal the assistant core to stop
+        request_stop()
+        
+        # Update UI to show stopping with helpful message
+        if hasattr(self, 'status_label'):
+            self.status_label.configure(
+                text="⏹️ Stopping assistant...\n" 
+                     "⚠️ If you're speaking, please STOP talking\n"
+                     "to exit faster (usually 5-8 seconds)"
+            )
+        if hasattr(self, 'activity_label'):
+            self.activity_label.configure(text="● STOPPING", text_color="orange")
+        if hasattr(self, 'stop_button'):
+            self.stop_button.configure(state="disabled", text="Stopping... Please wait")
+        
+        # Update GUI to show changes
+        self.update()
+        
+        # OPTIMIZED: Two-stage timeout for better UX
+        if self.assistant_thread and self.assistant_thread.is_alive():
+            print("[GUI] Waiting for assistant thread to terminate...")
+            
+            # Stage 1: Wait 8 seconds (covers normal case - just listening)
+            self.assistant_thread.join(timeout=8.0)
+            
+            if self.assistant_thread.is_alive():
+                # Still alive - user might be speaking
+                print("[GUI] Thread still active, likely user is speaking...")
+                if hasattr(self, 'status_label'):
+                    self.status_label.configure(
+                        text="⏹️ Still stopping...\n"
+                             "⚠️ Please STOP SPEAKING immediately!\n"
+                             "Waiting for speech to end..."
+                    )
+                self.update()
+                
+                # Stage 2: Wait additional 17 seconds (max phrase_time_limit=20s total)
+                self.assistant_thread.join(timeout=17.0)
+            
+            if self.assistant_thread.is_alive():
+                print("[GUI WARNING] Thread did not stop gracefully within timeout")
+                messagebox.showwarning(
+                    "Warning", 
+                    "Assistant may still be running in background.\nPlease restart the application if issues persist."
+                )
+            else:
+                print("[GUI] Assistant thread terminated successfully ✓")
+        
+        # Clean up thread reference
+        self.assistant_thread = None
+        
         # Return to dashboard
         self.show_dashboard()
-        # Note: You may need to implement a proper stopping mechanism in assistant_core
-        # if run_babygirl_assistant doesn't have a way to gracefully stop
+        print("[GUI] Returned to dashboard")
 
 # Run GUI
 if __name__ == "__main__":
