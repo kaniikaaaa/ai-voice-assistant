@@ -42,8 +42,40 @@ def verify_password(password, password_hash):
     return hash_password(password) == password_hash
 
 def validate_email(email):
-    """Validate email format using regex"""
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    """
+    Validate email format using regex (RFC 5322 compliant)
+    Returns True if email is valid, False otherwise
+    """
+    # Comprehensive email validation regex
+    email_pattern = r'^[a-zA-Z0-9][a-zA-Z0-9._%+-]{0,63}@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$'
+    
+    # Additional validation checks
+    if not email or len(email) > 254:  # Max email length per RFC 5321
+        return False
+    
+    if email.count('@') != 1:  # Must have exactly one @ symbol
+        return False
+    
+    local_part, domain = email.rsplit('@', 1)
+    
+    # Local part (before @) validation
+    if len(local_part) > 64:  # Max local part length
+        return False
+    
+    if local_part.startswith('.') or local_part.endswith('.'):
+        return False
+    
+    if '..' in local_part:  # No consecutive dots
+        return False
+    
+    # Domain validation
+    if len(domain) > 253:  # Max domain length
+        return False
+    
+    if domain.startswith('-') or domain.endswith('-'):
+        return False
+    
+    # Apply regex pattern
     return re.match(email_pattern, email) is not None
 
 def register_user_db(email, password):
