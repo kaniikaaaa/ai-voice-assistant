@@ -39,9 +39,9 @@ AI_PROVIDER = "openai"  # Options: "openai" (ChatGPT), "gemini", "both"
 OPENAI_CLIENT = None  # OpenAI client
 GEMINI_CLIENT = None  # Gemini client
 
-def run_babygirl_assistant():
+def run_ai_assistant_zen():
     """
-    Main voice assistant function
+    Main voice assistant function - AI Assistant Zen
     This function runs the voice assistant loop
     """
     try:
@@ -463,5 +463,5 @@ def process_command(command):
 
 
 if __name__ == "__main__":
-    run_babygirl_assistant()
+    run_ai_assistant_zen()
 

@@ -12,7 +12,7 @@ import hashlib
 import threading
 import re
 import sys
-from assistant_core import run_babygirl_assistant, request_stop, reset_stop
+from assistant_core import run_ai_assistant_zen, request_stop, reset_stop
 from dotenv import load_dotenv
 
 # Load .env file
@@ -382,7 +382,7 @@ class AssistantApp(ctk.CTk):
         """Wrapper to run assistant and handle exceptions"""
         try:
             print("[GUI] Assistant starting in thread...")
-            run_babygirl_assistant()
+            run_ai_assistant_zen()
         except Exception as e:
             print(f"[GUI ERROR] Assistant thread crashed: {e}")
             import traceback
