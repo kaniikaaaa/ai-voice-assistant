@@ -1,347 +1,236 @@
-# 🎤 AI Assistant Zen
+# AI Assistant Zen
 
-<div align="center">
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
+[![Status](https://img.shields.io/badge/status-active-success.svg)]()
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Status](https://img.shields.io/badge/status-active-success.svg)
+A sophisticated desktop voice assistant powered by AI, featuring speech recognition, natural language processing, and a modern graphical interface.
 
-**A sophisticated desktop voice assistant powered by AI, featuring speech recognition, natural language processing, and a modern GUI.**
+## Overview
 
-[Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Usage](#-usage) • [Configuration](#️-configuration)
+AI Assistant Zen is a production-ready voice assistant that combines speech recognition, text-to-speech synthesis, and AI-powered conversational capabilities. The application features secure user authentication, optional wake-word detection, and an intuitive GUI built with modern design principles.
 
-</div>
+### Key Features
 
----
+- Real-time speech recognition with Google Speech API
+- Natural text-to-speech output using pyttsx3
+- AI-powered responses via Google Gemini
+- Secure user authentication with password hashing
+- Optional wake-word detection ("Zen")
+- Multi-threaded architecture for responsive UI
+- SQLite database for user management
+- Configurable feature flags for flexible operation modes
 
-## 📋 Overview
-
-**AI Assistant Zen** is a production-ready voice assistant application that combines cutting-edge speech recognition, text-to-speech synthesis, and AI-powered conversational capabilities. Built with a modular architecture, it features secure user authentication, optional wake-word detection, and an intuitive graphical interface.
-
-### 🎯 Key Highlights
-
-- 🎙️ **Real-time Speech Recognition** - Continuous voice input processing
-- 🔊 **Natural Text-to-Speech** - Human-like voice responses
-- 🤖 **AI-Powered Intelligence** - Google Gemini integration for smart conversations
-- 🔐 **Secure Authentication** - Password hashing and SQLite database
-- 🎨 **Modern GUI** - Beautiful CustomTkinter interface
-- ⚡ **Multi-threaded** - Non-blocking UI with background processing
-- 🎯 **Wake Word Detection** - Optional "Zen" activation (Porcupine)
-- 🔧 **Feature Flags** - Easy configuration for different modes
-
----
-
-## ✨ Features
-
-### Core Capabilities
-
-| Feature | Description |
-|---------|-------------|
-| **Voice Recognition** | Google Speech Recognition with ambient noise adjustment |
-| **AI Responses** | Powered by Google Gemini for intelligent, context-aware replies |
-| **Text-to-Speech** | Natural voice output using pyttsx3 |
-| **Wake Word** | Optional activation using custom "Zen" wake word |
-| **User Management** | Registration, login, and session tracking |
-| **Fast Commands** | Instant local responses for time, date, and common queries |
-| **Secure Storage** | SHA-256 password hashing with SQLite database |
-
-### Modes of Operation
-
-1. **Wake Word Mode** - Say "Zen" to activate the assistant
-2. **Simple Mode** - Always listening, no wake word required
-3. **AI Mode** - Intelligent responses using Google Gemini
-4. **Basic Mode** - Rule-based responses without AI
-
----
-
-## 🚀 Demo
-
-### Voice Interaction Flow
-
-```
-👤 User: "Hey Zen, what's the weather like today?"
-🤖 Assistant: "I can help you with that! Currently, I can provide time, date, and answer questions. For real-time weather, I'd need additional API integration."
-
-👤 User: "Tell me a joke"
-🤖 Assistant: "Why do programmers prefer dark mode? Because light attracts bugs!"
-
-👤 User: "What time is it?"
-🤖 Assistant: "The current time is 3:45 PM"
-```
-
----
-
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
-- **Python 3.8+**
-- **Microphone** and **Speakers**
-- **Internet Connection** (for speech recognition and AI)
-- **Windows/Linux/macOS** (tested on Windows)
+- Python 3.8 or higher
+- Microphone and audio output device
+- Internet connection (for speech recognition and AI)
 
-### Step 1: Clone the Repository
+### Setup Instructions
+
+**1. Clone the repository**
 
 ```bash
 git clone https://github.com/kaniikaaaa/ai-voice-assistant.git
 cd ai-voice-assistant
 ```
 
-### Step 2: Install Dependencies
+**2. Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**Required Packages:**
-```
-customtkinter>=5.2.0
-python-dotenv>=1.0.0
-pyttsx3>=2.90
-SpeechRecognition>=3.10.0
-pyaudio>=0.2.13
-pvporcupine>=3.0.0
-pvrecorder>=1.2.0
-google-genai>=1.0.0
-```
-
-### Step 3: Set Up Environment Variables
+**3. Configure environment variables**
 
 Create a `.env` file in the project root:
 
 ```env
 # Required for AI responses
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_gemini_api_key
 
-# Optional: Only needed if using wake word detection
-PORCUPINE_ACCESS_KEY=your_porcupine_access_key_here
+# Optional: for wake word detection
+PORCUPINE_ACCESS_KEY=your_porcupine_key
 ```
 
 **Get API Keys:**
-- **Gemini API**: [Google AI Studio](https://makersuite.google.com/app/apikey) (Free tier available)
-- **Porcupine**: [Picovoice Console](https://console.picovoice.ai/) (Optional, for wake word)
+- Gemini API: https://makersuite.google.com/app/apikey
+- Porcupine: https://console.picovoice.ai/ (optional)
 
-### Step 4: Run the Application
+**4. Run the application**
 
 ```bash
 python main.py
 ```
 
----
+## Usage
 
-## 🎮 Usage
+### Getting Started
 
-### First Time Setup
+1. Launch the application
+2. Register a new account or login
+3. Click "Start Voice Assistant" from the dashboard
+4. Begin speaking your commands
 
-1. **Launch** the application: `python main.py`
-2. **Register** a new account with email and password
-3. **Login** with your credentials
-4. **Start** the voice assistant from the dashboard
-
-### Voice Commands
+### Available Commands
 
 | Command | Response |
 |---------|----------|
-| `"What time is it?"` | Current time |
-| `"What's the date?"` | Current date |
-| `"Tell me a joke"` | Random programming joke |
-| `"Help"` | Available commands |
-| `"Exit"` / `"Quit"` | Stop assistant |
-| Any question | AI-powered response |
+| "What time is it?" | Returns current time |
+| "What's the date?" | Returns current date |
+| "Tell me a joke" | Responds with a joke |
+| "Help" | Lists available commands |
+| "Exit" / "Quit" | Stops the assistant |
+| General questions | AI-powered response |
 
-### GUI Features
+## Configuration
 
-- **Authentication Screen** - Secure login/registration
-- **User Dashboard** - View profile and statistics
-- **Assistant Control** - Start/stop voice assistant
-- **Status Indicators** - Real-time feedback
+### Feature Flags
 
----
-
-## ⚙️ Configuration
-
-### Feature Flags (in `assistant_core.py`)
+Edit `assistant_core.py` to configure operation modes:
 
 ```python
-# Enable/Disable wake word detection
-ENABLE_WAKE_WORD = False  # Set to True to enable "Zen" wake word
+# Enable/disable wake word detection
+ENABLE_WAKE_WORD = False
 
-# Enable/Disable AI responses
-USE_AI = True  # Set to False for basic rule-based responses only
+# Enable/disable AI responses
+USE_AI = True
 ```
 
-### Speech Settings (in `speech.py`)
+### Speech Settings
+
+Modify `speech.py` to adjust voice parameters:
 
 ```python
-# Text-to-Speech Configuration
-engine.setProperty('rate', 150)    # Speech speed (default: 150)
-engine.setProperty('volume', 1.0)  # Volume level (0.0 to 1.0)
+# Speech rate (words per minute)
+engine.setProperty('rate', 150)
 
-# Speech Recognition Sensitivity
-r.energy_threshold = 300           # Audio energy threshold
-r.pause_threshold = 0.8            # Silence duration (seconds)
+# Volume level (0.0 to 1.0)
+engine.setProperty('volume', 1.0)
+
+# Recognition sensitivity
+r.energy_threshold = 300
+r.pause_threshold = 0.8
 ```
 
----
+## Architecture
 
-## 🏗️ Project Structure
+### Project Structure
 
 ```
 ai-voice-assistant/
-│
-├── main.py                    # GUI application with authentication
-├── assistant_core.py          # Core voice assistant logic and AI
+├── main.py                    # GUI and authentication
+├── assistant_core.py          # Core logic and AI integration
 ├── speech.py                  # Speech recognition and TTS
 ├── voice assistant_gui.py     # Alternative GUI implementation
-│
-├── requirements.txt           # Python dependencies
-├── .env                       # Environment variables (not in repo)
-├── assistant_users.db         # SQLite database (auto-created)
-│
-├── ai_assistant_zen.ppn       # Wake word model files
-├── LICENSE.txt                # Project license
-└── README.md                  # This file
+├── requirements.txt           # Dependencies
+├── .env                       # Environment variables
+├── assistant_users.db         # SQLite database
+└── *.ppn                      # Wake word model files
 ```
 
----
+### Technology Stack
 
-## 🔧 Troubleshooting
+- **Language:** Python 3.8+
+- **GUI:** CustomTkinter
+- **Speech Recognition:** Google Speech Recognition API
+- **Text-to-Speech:** pyttsx3
+- **AI Model:** Google Gemini
+- **Wake Word Detection:** Porcupine by Picovoice
+- **Database:** SQLite3
+- **Security:** SHA-256 password hashing
 
-### Common Issues
+## Troubleshooting
 
-#### 1. **Microphone Not Working**
+### Microphone Issues
+
+Test your microphone setup:
 ```bash
-# Test microphone
 python -m speech_recognition
 ```
-- Ensure microphone permissions are granted
-- Check default input device in system settings
 
-#### 2. **PyAudio Installation Error (Windows)**
+Verify microphone permissions are granted in system settings.
+
+### PyAudio Installation (Windows)
+
+If PyAudio fails to install:
 ```bash
-# Install pre-built wheel
 pip install pipwin
 pipwin install pyaudio
 ```
 
-#### 3. **No AI Responses**
-- Verify `GEMINI_API_KEY` in `.env` file
-- Check internet connection
-- View console for error messages
+### No AI Responses
 
-#### 4. **TTS Not Speaking**
-- Ensure speakers/headphones are connected
+- Verify `GEMINI_API_KEY` is set in `.env`
+- Check internet connectivity
+- Review console output for error messages
+
+### Text-to-Speech Not Working
+
+- Confirm audio output device is connected
 - Check system volume settings
-- Try different voice in `speech.py`
+- Try different voice settings in `speech.py`
 
-#### 5. **Wake Word Not Detecting**
-- Verify `PORCUPINE_ACCESS_KEY` in `.env`
-- Check `ENABLE_WAKE_WORD = True` in `assistant_core.py`
-- Ensure `.ppn` model files exist
+### Wake Word Not Detecting
 
----
+- Ensure `PORCUPINE_ACCESS_KEY` is configured in `.env`
+- Set `ENABLE_WAKE_WORD = True` in `assistant_core.py`
+- Verify `.ppn` model files exist in project directory
 
-## 🧪 Running Without GUI
+## Security
 
-For command-line testing:
+The application implements multiple security measures:
+
+- Password hashing using SHA-256
+- No plaintext credential storage
+- Email format validation
+- Session tracking with timestamps
+- Environment-based API key management
+- Parameterized database queries
+
+## Development
+
+### Running Without GUI
+
+For testing and debugging:
 
 ```bash
 python assistant_core.py
 ```
 
-This runs the assistant directly without the GUI, useful for debugging.
+### Operation Modes
 
----
+**Wake Word Mode:** Activated by saying "Zen"
+**Simple Mode:** Continuously listening without wake word
+**AI Mode:** Intelligent responses using Google Gemini
+**Basic Mode:** Rule-based responses without AI
 
-## 🛠️ Tech Stack
+## Contributing
 
-| Component | Technology |
-|-----------|-----------|
-| **Language** | Python 3.8+ |
-| **GUI Framework** | CustomTkinter |
-| **Speech Recognition** | Google Speech Recognition API |
-| **Text-to-Speech** | pyttsx3 |
-| **AI Model** | Google Gemini (gemini-flash-latest) |
-| **Wake Word** | Porcupine by Picovoice |
-| **Database** | SQLite3 |
-| **Authentication** | SHA-256 hashing |
-| **Environment** | python-dotenv |
+Contributions are welcome. Please follow these guidelines:
 
----
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/NewFeature`)
+3. Commit your changes (`git commit -m 'Add NewFeature'`)
+4. Push to the branch (`git push origin feature/NewFeature`)
+5. Open a Pull Request
 
-## 🔐 Security Features
+## License
 
-- ✅ **Password Hashing** - SHA-256 with no plaintext storage
-- ✅ **Email Validation** - Regex-based format checking
-- ✅ **Session Management** - Login tracking and timestamps
-- ✅ **Environment Variables** - Secure API key storage
-- ✅ **Database Security** - SQLite with parameterized queries
+This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
 
----
-
-## 🚀 Future Enhancements
-
-- [ ] Multi-language support
-- [ ] Conversation history with context
-- [ ] Integration with smart home devices
-- [ ] Weather API integration
-- [ ] Calendar and reminder functionality
-- [ ] Voice biometrics for authentication
-- [ ] Cloud synchronization
-- [ ] Mobile companion app
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
-
----
-
-## 👨‍💻 Author
+## Author
 
 **Kanika**
-
 - GitHub: [@kaniikaaaa](https://github.com/kaniikaaaa)
-- Project: [ai-voice-assistant](https://github.com/kaniikaaaa/ai-voice-assistant)
+- Repository: [ai-voice-assistant](https://github.com/kaniikaaaa/ai-voice-assistant)
 
----
+## Acknowledgments
 
-## 🙏 Acknowledgments
-
-- **Google** - Gemini AI and Speech Recognition API
-- **Picovoice** - Porcupine wake word engine
-- **CustomTkinter** - Modern UI framework
-- **Open Source Community** - For amazing Python libraries
-
----
-
-## 📞 Support
-
-If you encounter issues or have questions:
-
-1. Check the [Troubleshooting](#-troubleshooting) section
-2. Open an [Issue](https://github.com/kaniikaaaa/ai-voice-assistant/issues)
-3. Review existing issues and discussions
-
----
-
-<div align="center">
-
-**⭐ If you find this project helpful, please give it a star!**
-
-Made with ❤️ by Kanika
-
-</div>
+- Google for Gemini AI and Speech Recognition API
+- Picovoice for Porcupine wake word engine
+- CustomTkinter for modern UI components
+- Open source community for Python libraries
