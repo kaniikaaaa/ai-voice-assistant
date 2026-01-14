@@ -1,8 +1,11 @@
 # Speech module for voice input/output
 import pyttsx3
 import speech_recognition as sr
+import time
 
 engine = None
+# Use fresh engine for each speech (more reliable on Windows)
+USE_FRESH_ENGINE = True
 
 def init_engine():
     global engine
@@ -28,6 +31,41 @@ def init_engine():
 
 def speak(text):
     global engine
+    
+    # Use fresh engine for each speech (more reliable on Windows)
+    if USE_FRESH_ENGINE:
+        try:
+            print(f"[SPEAKING] {text}")
+            
+            # Create fresh engine
+            temp_engine = pyttsx3.init()
+            
+            # Set voice to Zira (female)
+            voices = temp_engine.getProperty('voices')
+            for voice in voices:
+                if 'zira' in voice.name.lower():
+                    temp_engine.setProperty('voice', voice.id)
+                    break
+            
+            # Set properties
+            temp_engine.setProperty('rate', 150)
+            temp_engine.setProperty('volume', 1.0)
+            
+            # Speak
+            temp_engine.say(text)
+            temp_engine.runAndWait()
+            
+            # Clean up
+            del temp_engine
+            
+            print("[OK] Speech completed")
+            time.sleep(0.1)  # Small delay for stability
+            return
+        except Exception as e:
+            print(f"[ERROR] Fresh engine error: {e}")
+            # Fall through to old method
+    
+    # Original method (fallback)
     if not engine:
         engine = init_engine()
     
@@ -37,20 +75,40 @@ def speak(text):
     
     try:
         print(f"[SPEAKING] {text}")
+        
+        # Clear any pending speech
+        engine.stop()
+        
+        # Add text to queue
         engine.say(text)
+        
+        # Run and wait - this blocks until speech is done
         engine.runAndWait()
+        
+        # Extra safety: ensure queue is cleared
+        engine.stop()
+        
         print("[OK] Speech completed")
-    except Exception as e:
-        print(f"[ERROR] Speech error: {e}")
-        # Try to reinitialize engine
+    except RuntimeError as e:
+        # pyttsx3 sometimes throws RuntimeError on Windows
+        print(f"[WARN] Speech engine error: {e}")
+        print(f"[INFO] Reinitializing engine...")
+        # Force reinitialize
         engine = None
         engine = init_engine()
         if engine:
             try:
+                engine.stop()
                 engine.say(text)
                 engine.runAndWait()
-            except:
-                print(f"[WARN] TTS failed. Text: {text}")
+                engine.stop()
+                print("[OK] Speech completed (retry)")
+            except Exception as e2:
+                print(f"[ERROR] TTS retry failed: {e2}")
+                print(f"[TEXT] {text}")
+    except Exception as e:
+        print(f"[ERROR] Speech error: {e}")
+        print(f"[TEXT] {text}")
 
 def listen():
     r = sr.Recognizer()

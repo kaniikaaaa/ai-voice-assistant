@@ -1,0 +1,60 @@
+===== AI ASSISTANT ZEN - API KEY SETUP GUIDE =====
+
+Your assistant is now upgraded to be as smart as ChatGPT with Alexa-like voice!
+
+IMPORTANT: You need to add API keys for the AI to work properly.
+
+===== STEP 1: Create .env File =====
+1. Create a new file named: .env (in this folder)
+2. Add the following content to it:
+
+===== STEP 2: Add API Keys to .env =====
+
+# PRIMARY AI - ChatGPT (OpenAI) - RECOMMENDED
+OPENAI_API_KEY=your_openai_api_key_here
+
+# FALLBACK AI - Google Gemini (FREE)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# OPTIONAL - Wake Word Detection
+PORCUPINE_ACCESS_KEY=your_porcupine_key_here
+
+===== STEP 3: Get Your API Keys =====
+
+🚀 OPTION 1: OpenAI (ChatGPT) - Most Powerful
+   - Go to: https://platform.openai.com/api-keys
+   - Sign up / Login
+   - Click "Create new secret key"
+   - Copy the key and paste it in .env file
+   - Replace: your_openai_api_key_here
+   
+✨ OPTION 2: Google Gemini - FREE Alternative
+   - Go to: https://makersuite.google.com/app/apikey
+   - Click "Get API Key"
+   - Copy and paste in .env file
+   - Replace: your_gemini_api_key_here
+
+🎤 OPTIONAL: Wake Word "ZEN"
+   - Go to: https://console.picovoice.ai/
+   - Sign up for FREE
+   - Copy access key to .env file
+   - Replace: your_porcupine_key_here
+   - Enable wake word in assistant_core.py: ENABLE_WAKE_WORD = True
+
+===== STEP 4: Install Dependencies =====
+Run this command in terminal:
+pip install openai
+
+===== STEP 5: Run the Assistant =====
+python main.py
+
+===== NOTES =====
+- You need AT LEAST ONE AI key (OpenAI or Gemini)
+- OpenAI gives BEST results (like ChatGPT)
+- Gemini is FREE but requires API key
+- Without API keys, assistant will only do basic tasks
+
+===== EXAMPLE .env FILE =====
+OPENAI_API_KEY=sk-proj-abc123xyz456
+GEMINI_API_KEY=AIzaSyC_example_key_123456
+PORCUPINE_ACCESS_KEY=YourPorcupineKeyHere

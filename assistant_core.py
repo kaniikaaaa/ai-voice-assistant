@@ -1,5 +1,6 @@
 """
 AI Assistant Core - Voice Assistant Logic
+Enhanced with ChatGPT (OpenAI) + Gemini Support
 """
 import os
 import re
@@ -14,7 +15,9 @@ ENABLE_WAKE_WORD = False  # Changed to False - wake word disabled by default
 
 # AI Configuration
 USE_AI = True  # Set to False to use basic responses only
-AI_MODEL = None  # Will be initialized when needed
+AI_PROVIDER = "openai"  # Options: "openai" (ChatGPT), "gemini", "both"
+OPENAI_CLIENT = None  # OpenAI client
+GEMINI_CLIENT = None  # Gemini client
 
 def run_babygirl_assistant():
     """
@@ -94,11 +97,20 @@ def run_simple_mode():
     
     # Test TTS
     print("[TEST] Testing text-to-speech...")
-    speak("Hello! I'm your AI assistant. How can I help you?")
+    print("[INFO] You should hear me speak now...")
+    speak("Hello! I'm your AI assistant powered by ChatGPT. How can I help you?")
     
-    # Verify microphone
-    print("\n[OK] If you heard me speak, the voice output is working!")
-    print("[OK] Make sure your microphone is ready...")
+    # Verify with user
+    print("\n" + "="*50)
+    print("[IMPORTANT] Did you hear me speak? (Y/N)")
+    print("="*50)
+    print("[INFO] If NO:")
+    print("  1. Check speakers/headphones are connected")
+    print("  2. Check Windows volume is not muted")  
+    print("  3. Press Ctrl+C to exit and run: python test_voice.py")
+    print("="*50)
+    print("\n[OK] Make sure your microphone is ready...")
+    print("[OK] Starting listening mode...")
     print("="*50)
     
     while True:
@@ -208,86 +220,156 @@ def run_with_wake_word(access_key):
         porcupine.delete()
 
 
-def init_ai_model():
+def init_openai():
     """
-    Initialize AI model (Google Gemini)
+    Initialize OpenAI GPT (ChatGPT) - PRIMARY AI
     """
-    global AI_MODEL
+    global OPENAI_CLIENT
     
-    if not USE_AI:
+    if OPENAI_CLIENT is not None:
+        return OPENAI_CLIENT
+    
+    try:
+        from openai import OpenAI
+        
+        api_key = os.getenv('OPENAI_API_KEY')
+        
+        if not api_key:
+            print("[WARN] OPENAI_API_KEY not found in .env file")
+            print("[INFO] Get API key from: https://platform.openai.com/api-keys")
+            return None
+        
+        OPENAI_CLIENT = OpenAI(api_key=api_key)
+        print("[OK] ChatGPT (OpenAI) initialized successfully! 🚀")
+        return OPENAI_CLIENT
+        
+    except ImportError:
+        print("[WARN] openai library not installed")
+        print("[WARN] Install: pip install openai")
         return None
+    except Exception as e:
+        print(f"[WARN] OpenAI initialization failed: {e}")
+        return None
+
+
+def init_gemini():
+    """
+    Initialize Google Gemini AI - FALLBACK AI
+    """
+    global GEMINI_CLIENT
     
-    if AI_MODEL is not None:
-        return AI_MODEL
+    if GEMINI_CLIENT is not None:
+        return GEMINI_CLIENT
     
     try:
         from google import genai
-        from google.genai import types
         
         api_key = os.getenv('GEMINI_API_KEY')
         
         if not api_key:
             print("[WARN] GEMINI_API_KEY not found in .env file")
-            print("[WARN] AI responses disabled. Using basic responses only.")
             print("[INFO] Get free API key from: https://makersuite.google.com/app/apikey")
             return None
         
-        client = genai.Client(api_key=api_key)
-        AI_MODEL = client
-        print("[OK] AI Model (Gemini) initialized successfully!")
-        return AI_MODEL
+        GEMINI_CLIENT = genai.Client(api_key=api_key)
+        print("[OK] Gemini AI initialized successfully! ✨")
+        return GEMINI_CLIENT
         
     except ImportError:
         print("[WARN] google-genai not installed")
         print("[WARN] Install: pip install google-genai")
         return None
     except Exception as e:
-        print(f"[WARN] AI initialization failed: {e}")
+        print(f"[WARN] Gemini initialization failed: {e}")
         return None
 
 
 def get_ai_response(prompt):
     """
-    Get response from AI model
+    Get intelligent response from AI (ChatGPT primary, Gemini fallback)
     """
-    client = init_ai_model()
-    
-    if not client:
+    if not USE_AI:
         return None
     
-    try:
-        # Create a conversational prompt with system instruction
-        system_instruction = """You are a helpful voice assistant named Zen. 
-        Keep responses concise (2-3 sentences max) since they will be spoken aloud.
-        Be friendly, clear, and helpful. Speak naturally as if talking to a friend."""
-        
-        response = client.models.generate_content(
-            model='gemini-flash-latest',
-            contents=prompt,
-            config={
-                'system_instruction': system_instruction,
-                'temperature': 0.7,
-            }
-        )
-        
-        return response.text
-        
-    except Exception as e:
-        print(f"[WARN] AI response error: {e}")
-        return None
+    system_prompt = """You are Zen, an intelligent voice assistant like Alexa but powered by advanced AI.
+You have comprehensive knowledge like ChatGPT - you can answer questions about science, history, math, 
+programming, general knowledge, current events, and any topic.
+
+Keep responses:
+- Concise (2-4 sentences) since they'll be spoken aloud
+- Natural and conversational
+- Accurate and helpful
+- Friendly but professional
+
+If you don't know something, be honest but helpful."""
+    
+    # Try OpenAI (ChatGPT) first - Most powerful option
+    if AI_PROVIDER in ["openai", "both"]:
+        try:
+            client = init_openai()
+            if client:
+                print("[AI] Using ChatGPT...")
+                print(f"[AI] Sending question: {prompt[:50]}...")
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",  # Fast and cost-effective
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=150,
+                    timeout=30  # 30 second timeout
+                )
+                answer = response.choices[0].message.content.strip()
+                print(f"[AI] ✓ Got ChatGPT Response!")
+                print(f"[AI] Response: {answer}")
+                return answer
+        except Exception as e:
+            print(f"[ERROR] ChatGPT error: {e}")
+            import traceback
+            traceback.print_exc()
+            if AI_PROVIDER == "openai":
+                print("[INFO] Trying Gemini as fallback...")
+    
+    # Try Gemini as fallback or if selected
+    if AI_PROVIDER in ["gemini", "both"] or OPENAI_CLIENT is None:
+        try:
+            client = init_gemini()
+            if client:
+                print("[AI] Using Gemini AI...")
+                response = client.models.generate_content(
+                    model='gemini-2.0-flash-exp',
+                    contents=prompt,
+                    config={
+                        'system_instruction': system_prompt,
+                        'temperature': 0.7,
+                    }
+                )
+                answer = response.text.strip()
+                print(f"[AI] Gemini Response: {answer[:50]}...")
+                return answer
+        except Exception as e:
+            print(f"[WARN] Gemini error: {e}")
+    
+    print("[ERROR] No AI service available!")
+    return None
 
 
 def process_command(command):
     """
-    Process voice commands and return response using AI
+    Process voice commands and return intelligent AI-powered responses
+    Now handles ALL questions like ChatGPT!
     """
     command_lower = command.lower()
     
-    # Math calculation (check first before time check)
-    if any(word in command_lower for word in ['plus', 'minus', 'times', 'multiply', 'divide', 'into', 'calculate', 'what is']):
-        # Try to handle basic math
+    print(f"[PROCESSING] Command: {command}")
+    
+    # Quick local responses (faster than AI)
+    
+    # Math calculation - Quick pattern matching for simple math
+    if any(word in command_lower for word in ['plus', 'minus', 'times', 'multiply', 'divide', 'into']):
+        # Try to handle basic math locally (faster)
         try:
-            # Pattern for simple math: "what is X operation Y"
             math_patterns = [
                 (r'(\d+\.?\d*)\s*(?:plus|\+)\s*(\d+\.?\d*)', lambda a, b: float(a) + float(b), 'plus'),
                 (r'(\d+\.?\d*)\s*(?:minus|-)\s*(\d+\.?\d*)', lambda a, b: float(a) - float(b), 'minus'),
@@ -301,14 +383,13 @@ def process_command(command):
                     num1, num2 = match.groups()
                     result = operation(num1, num2)
                     if result is not None:
-                        # Format result nicely (remove .0 if it's a whole number)
                         result_str = str(int(result)) if result == int(result) else str(result)
                         return f"{num1} {op_name} {num2} equals {result_str}"
                     else:
                         return "I cannot divide by zero"
         except Exception as e:
             print(f"[WARN] Math calculation failed: {e}")
-            # Continue to AI if math fails
+            # Fall through to AI
     
     # Time check (use more specific matching)
     if re.search(r'\b(what|current|what\'s|whats)\s+(time|clock)\b', command_lower) or 'time is it' in command_lower:
@@ -322,14 +403,18 @@ def process_command(command):
         current_date = datetime.now().strftime("%B %d, %Y")
         return f"Today is {current_date}"
     
-    # Try AI response for everything else
+    # Try AI response for EVERYTHING else - This is where the magic happens!
     if USE_AI:
-        print("[AI] Thinking...")
+        print("[AI] 🤔 Thinking with ChatGPT/AI brain...")
         ai_response = get_ai_response(command)
         if ai_response:
             return ai_response
+        else:
+            print("[WARN] AI service unavailable. Check your API keys in .env file!")
     
-    # Fallback to basic responses if AI fails
+    # Fallback to basic responses only if AI completely fails
+    print("[INFO] Using fallback responses (AI not available)")
+    
     if any(word in command_lower for word in ['joke', 'funny']):
         import random
         jokes = [
@@ -340,10 +425,10 @@ def process_command(command):
         return random.choice(jokes)
     
     if 'help' in command_lower:
-        return "I can answer questions, do math, tell you the time, date, jokes, and chat with you. What would you like to know?"
+        return "I can answer ANY question like ChatGPT! Ask me about science, history, math, programming, or anything. I can also tell you the time and date. What would you like to know?"
     
-    # Default response
-    return f"I heard you say: {command}. I'm not sure how to respond to that right now."
+    # Default response when AI is not available
+    return "I need an AI API key to answer that. Please check the SETUP_API_KEYS.txt file to configure OpenAI or Gemini."
 
 
 if __name__ == "__main__":

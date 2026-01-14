@@ -4,22 +4,23 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
 
-A sophisticated desktop voice assistant powered by AI, featuring speech recognition, natural language processing, and a modern graphical interface.
+A sophisticated desktop voice assistant powered by ChatGPT and AI, featuring speech recognition, natural language processing, and a modern graphical interface. **Now as smart as ChatGPT with the voice of Alexa!**
 
 ## Overview
 
-AI Assistant Zen is a production-ready voice assistant that combines speech recognition, text-to-speech synthesis, and AI-powered conversational capabilities. The application features secure user authentication, optional wake-word detection, and an intuitive GUI built with modern design principles.
+AI Assistant Zen is a production-ready voice assistant that combines speech recognition, text-to-speech synthesis, and ChatGPT-powered conversational capabilities. The application features secure user authentication, optional wake-word detection, and an intuitive GUI built with modern design principles.
 
 ### Key Features
 
-- Real-time speech recognition with Google Speech API
-- Natural text-to-speech output using pyttsx3
-- AI-powered responses via Google Gemini
-- Secure user authentication with password hashing
-- Optional wake-word detection ("Zen")
-- Multi-threaded architecture for responsive UI
-- SQLite database for user management
-- Configurable feature flags for flexible operation modes
+- **🚀 ChatGPT Integration** - Powered by OpenAI GPT for comprehensive knowledge and intelligent responses
+- **🎤 Voice Interaction** - Real-time speech recognition with Google Speech API
+- **🔊 Alexa-like TTS** - Natural text-to-speech output using pyttsx3
+- **✨ Dual AI Support** - Primary: ChatGPT (OpenAI) | Fallback: Google Gemini
+- **🔒 Secure Authentication** - User authentication with password hashing
+- **🎯 Wake Word Detection** - Optional wake-word detection ("Zen")
+- **⚡ Multi-threaded** - Responsive UI with multi-threaded architecture
+- **💾 User Management** - SQLite database for user management
+- **🎛️ Configurable** - Feature flags for flexible operation modes
 
 ## Installation
 
@@ -49,7 +50,10 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-# Required for AI responses
+# PRIMARY AI - ChatGPT (OpenAI) - RECOMMENDED FOR BEST RESULTS
+OPENAI_API_KEY=your_openai_api_key
+
+# FALLBACK AI - Google Gemini (FREE alternative)
 GEMINI_API_KEY=your_gemini_api_key
 
 # Optional: for wake word detection
@@ -57,8 +61,11 @@ PORCUPINE_ACCESS_KEY=your_porcupine_key
 ```
 
 **Get API Keys:**
-- Gemini API: https://makersuite.google.com/app/apikey
+- **OpenAI (ChatGPT)**: https://platform.openai.com/api-keys - **Recommended for comprehensive knowledge**
+- Gemini API: https://makersuite.google.com/app/apikey - **Free alternative**
 - Porcupine: https://console.picovoice.ai/ (optional)
+
+**Note:** You need at least ONE AI key (OpenAI or Gemini). OpenAI provides the best ChatGPT-like responses!
 
 **4. Run the application**
 
@@ -77,14 +84,23 @@ python main.py
 
 ### Available Commands
 
+Your assistant can now answer virtually ANY question like ChatGPT!
+
 | Command | Response |
 |---------|----------|
 | "What time is it?" | Returns current time |
 | "What's the date?" | Returns current date |
+| "What is 25 times 47?" | Calculates math problems |
 | "Tell me a joke" | Responds with a joke |
+| "Explain quantum physics" | AI-powered intelligent explanation |
+| "Who was Albert Einstein?" | Comprehensive knowledge answers |
+| "What is Python programming?" | Technical questions answered |
+| "Tell me about World War 2" | Historical information |
+| "How do I make pizza?" | Cooking instructions |
+| "What's the capital of France?" | General knowledge |
+| **ANY question!** | ChatGPT-powered response |
 | "Help" | Lists available commands |
 | "Exit" / "Quit" | Stops the assistant |
-| General questions | AI-powered response |
 
 ## Configuration
 
@@ -98,6 +114,9 @@ ENABLE_WAKE_WORD = False
 
 # Enable/disable AI responses
 USE_AI = True
+
+# Choose AI provider: "openai" (ChatGPT), "gemini", or "both" (fallback)
+AI_PROVIDER = "openai"  # Recommended: "openai" for best results
 ```
 
 ### Speech Settings
@@ -138,7 +157,8 @@ ai-voice-assistant/
 - **GUI:** CustomTkinter
 - **Speech Recognition:** Google Speech Recognition API
 - **Text-to-Speech:** pyttsx3
-- **AI Model:** Google Gemini
+- **Primary AI:** OpenAI GPT (ChatGPT) - **New!**
+- **Fallback AI:** Google Gemini
 - **Wake Word Detection:** Porcupine by Picovoice
 - **Database:** SQLite3
 - **Security:** SHA-256 password hashing
@@ -164,9 +184,12 @@ pipwin install pyaudio
 
 ### No AI Responses
 
-- Verify `GEMINI_API_KEY` is set in `.env`
+- Verify `OPENAI_API_KEY` or `GEMINI_API_KEY` is set in `.env`
+- Ensure you've run: `pip install openai`
 - Check internet connectivity
 - Review console output for error messages
+- If OpenAI fails, Gemini will automatically be used as fallback
+- See `SETUP_API_KEYS.txt` for detailed instructions
 
 ### Text-to-Speech Not Working
 
@@ -205,7 +228,8 @@ python assistant_core.py
 
 **Wake Word Mode:** Activated by saying "Zen"
 **Simple Mode:** Continuously listening without wake word
-**AI Mode:** Intelligent responses using Google Gemini
+**ChatGPT Mode:** Intelligent responses using OpenAI GPT (Primary)
+**Gemini Mode:** AI responses using Google Gemini (Fallback)
 **Basic Mode:** Rule-based responses without AI
 
 ## Contributing
@@ -230,6 +254,7 @@ This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) f
 
 ## Acknowledgments
 
+- OpenAI for ChatGPT/GPT models and advanced AI capabilities
 - Google for Gemini AI and Speech Recognition API
 - Picovoice for Porcupine wake word engine
 - CustomTkinter for modern UI components
