@@ -1,4 +1,4 @@
-# 📁 core/speech.py
+# Speech module for voice input/output
 import pyttsx3
 import speech_recognition as sr
 
@@ -7,7 +7,7 @@ engine = None
 def init_engine():
     global engine
     try:
-        print("🔧 Initializing text-to-speech engine...")
+        print("[INFO] Initializing text-to-speech engine...")
         engine = pyttsx3.init()
         voices = engine.getProperty('voices')
         
@@ -15,15 +15,15 @@ def init_engine():
         for voice in voices:
             if any(keyword in voice.name.lower() for keyword in ['female', 'woman', 'girl', 'zira']):
                 engine.setProperty('voice', voice.id)
-                print(f"✓ Voice set: {voice.name}")
+                print(f"[OK] Voice set: {voice.name}")
                 break
         
         engine.setProperty('rate', 150)  # Speed of speech
         engine.setProperty('volume', 1.0)  # Volume (0.0 to 1.0)
-        print("✓ Text-to-speech engine ready!")
+        print("[OK] Text-to-speech engine ready!")
         return engine
     except Exception as e:
-        print(f"❌ TTS init error: {e}")
+        print(f"[ERROR] TTS init error: {e}")
         return None
 
 def speak(text):
@@ -32,16 +32,16 @@ def speak(text):
         engine = init_engine()
     
     if not engine:
-        print(f"⚠️ TTS not available. Text output: {text}")
+        print(f"[WARN] TTS not available. Text output: {text}")
         return
     
     try:
-        print(f"🔊 Speaking: {text}")
+        print(f"[SPEAKING] {text}")
         engine.say(text)
         engine.runAndWait()
-        print("✓ Speech completed")
+        print("[OK] Speech completed")
     except Exception as e:
-        print(f"❌ Speech error: {e}")
+        print(f"[ERROR] Speech error: {e}")
         # Try to reinitialize engine
         engine = None
         engine = init_engine()
@@ -50,7 +50,7 @@ def speak(text):
                 engine.say(text)
                 engine.runAndWait()
             except:
-                print(f"⚠️ TTS failed. Text: {text}")
+                print(f"[WARN] TTS failed. Text: {text}")
 
 def listen():
     r = sr.Recognizer()
@@ -62,31 +62,31 @@ def listen():
     
     try:
         with sr.Microphone() as source:
-            print("\n🎧 Listening... (speak now)")
+            print("\n[LISTENING] Speak now...")
             
             # Adjust for ambient noise
-            print("🔧 Adjusting for background noise...")
+            print("[INFO] Adjusting for background noise...")
             r.adjust_for_ambient_noise(source, duration=1)
             
             # Listen with longer timeout and phrase limit
-            print("👂 Ready - speak your command...")
+            print("[READY] Speak your command...")
             audio = r.listen(source, timeout=10, phrase_time_limit=15)
             
-            print("🔄 Processing speech...")
+            print("[PROCESSING] Recognizing speech...")
             text = r.recognize_google(audio)
-            print(f"✓ Recognized: '{text}'\n")
+            print(f"[RECOGNIZED] '{text}'\n")
             return text
             
     except sr.WaitTimeoutError:
-        print("⏱️ Timeout - no speech detected (waited 10 seconds)")
+        print("[TIMEOUT] No speech detected (waited 10 seconds)")
         return ""
     except sr.UnknownValueError:
-        print("❓ Could not understand audio - please speak clearly")
+        print("[ERROR] Could not understand audio - please speak clearly")
         return ""
     except sr.RequestError as e:
-        print(f"❌ Network error: {e}")
-        print("⚠️ Check your internet connection")
+        print(f"[ERROR] Network error: {e}")
+        print("[WARN] Check your internet connection")
         return ""
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"[ERROR] Unexpected error: {e}")
         return ""

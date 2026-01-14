@@ -25,19 +25,19 @@ def run_babygirl_assistant():
         from speech import speak, listen, init_engine
         
         # Initialize TTS engine (will auto-initialize on first speak() call)
-        print("🚀 Starting AI Assistant Zen...")
+        print("[START] Starting AI Assistant Zen...")
         init_engine()  # Pre-initialize TTS engine
         
         # Check if wake word is enabled via feature flag
         if not ENABLE_WAKE_WORD:
             print("\n" + "="*50)
-            print("📢 WAKE WORD FEATURE DISABLED")
+            print("[INFO] WAKE WORD FEATURE DISABLED")
             print("="*50)
             print("Wake word 'ZEN' is currently disabled.")
             print("To enable: Set ENABLE_WAKE_WORD = True in assistant_core.py")
             print("="*50)
-            print("\n📢 Running in SIMPLE MODE - no wake word needed")
-            print("   Just speak and the assistant will listen!\n")
+            print("\n[MODE] Running in SIMPLE MODE - no wake word needed")
+            print("       Just speak and the assistant will listen!\n")
             run_simple_mode()
             return
         
@@ -51,7 +51,7 @@ def run_babygirl_assistant():
             
             if not access_key:
                 print("\n" + "="*50)
-                print("⚠️  WAKE WORD 'ZEN' - NOT ACTIVATED")
+                print("[WARN] WAKE WORD 'ZEN' - NOT ACTIVATED")
                 print("="*50)
                 print("To enable wake word 'ZEN':")
                 print("1. Get a FREE API key from: https://console.picovoice.ai/")
@@ -59,8 +59,8 @@ def run_babygirl_assistant():
                 print("3. Uncomment and add: PORCUPINE_ACCESS_KEY=your_key_here")
                 print("4. Save and restart the assistant")
                 print("="*50)
-                print("\n📢 Running in SIMPLE MODE - no wake word needed")
-                print("   Just speak and the assistant will listen!\n")
+                print("\n[MODE] Running in SIMPLE MODE - no wake word needed")
+                print("       Just speak and the assistant will listen!\n")
                 run_simple_mode()
                 return
             
@@ -68,13 +68,13 @@ def run_babygirl_assistant():
             run_with_wake_word(access_key)
             
         except ImportError:
-            print("⚠️ Porcupine wake word detection not available")
+            print("[WARN] Porcupine wake word detection not available")
             print("Install with: pip install pvporcupine pvrecorder")
             print("Running in simple listening mode...")
             run_simple_mode()
             
     except Exception as e:
-        print(f"❌ Error in assistant: {e}")
+        print(f"[ERROR] Error in assistant: {e}")
 
 
 def run_simple_mode():
@@ -85,49 +85,49 @@ def run_simple_mode():
     from speech import speak, listen
     
     print("\n" + "="*50)
-    print("🎤 AI ASSISTANT ZEN - SIMPLE MODE")
+    print("[MODE] AI ASSISTANT ZEN - SIMPLE MODE")
     print("="*50)
     print("Say something and I'll respond!")
     print("Say 'exit', 'quit', or 'goodbye' to stop.")
     print("="*50 + "\n")
     
     # Test TTS
-    print("🧪 Testing text-to-speech...")
+    print("[TEST] Testing text-to-speech...")
     speak("Hello! I'm your AI assistant. How can I help you?")
     
     # Verify microphone
-    print("\n✓ If you heard me speak, the voice output is working!")
-    print("✓ Make sure your microphone is ready...")
+    print("\n[OK] If you heard me speak, the voice output is working!")
+    print("[OK] Make sure your microphone is ready...")
     print("="*50)
     
     while True:
         try:
-            print("\n👂 Ready to listen...")
+            print("\n[READY] Listening...")
             # Listen for command
             command = listen()
             
             if command:
-                print(f"💬 You said: {command}")
+                print(f"[USER] You said: {command}")
                 
                 # Check for exit commands
                 if any(word in command.lower() for word in ['exit', 'quit', 'stop', 'goodbye', 'bye']):
-                    print("👋 Exiting...")
+                    print("[EXIT] Exiting...")
                     speak("Goodbye! Have a great day!")
                     break
                 
                 # Process command
                 response = process_command(command)
-                print(f"🤖 Assistant: {response}")
+                print(f"[ASSISTANT] {response}")
                 speak(response)
             else:
-                print("🔇 No speech detected or recognition failed. Try again...")
+                print("[WARN] No speech detected or recognition failed. Try again...")
             
         except KeyboardInterrupt:
-            print("\n👋 Exiting...")
+            print("\n[EXIT] Exiting...")
             speak("Goodbye!")
             break
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"[ERROR] {e}")
 
 
 def run_with_wake_word(access_key):
@@ -146,12 +146,12 @@ def run_with_wake_word(access_key):
             break
     
     if not wake_word_path:
-        print("⚠️ Wake word model file not found, falling back to simple mode")
+        print("[WARN] Wake word model file not found, falling back to simple mode")
         run_simple_mode()
         return
     
     print("\n" + "="*50)
-    print("🎤 AI ASSISTANT ZEN - WAKE WORD MODE ACTIVATED")
+    print("[MODE] AI ASSISTANT ZEN - WAKE WORD MODE ACTIVATED")
     print("="*50)
     print(f"Wake word: 'ZEN'")
     print(f"Model file: {wake_word_path}")
@@ -167,7 +167,7 @@ def run_with_wake_word(access_key):
     
     try:
         recorder.start()
-        print("🎤 Listening for wake word 'ZEN'...")
+        print("[LISTENING] Listening for wake word 'ZEN'...")
         print("(Say 'ZEN' to activate)\n")
         
         while True:
@@ -175,32 +175,32 @@ def run_with_wake_word(access_key):
             keyword_index = porcupine.process(pcm)
             
             if keyword_index >= 0:
-                print("✅ Wake word 'ZEN' detected!")
+                print("[DETECTED] Wake word 'ZEN' detected!")
                 speak("Yes? How can I help you?")
                 
                 # Listen for command
                 command = listen()
                 
                 if command:
-                    print(f"💬 You said: {command}")
+                    print(f"[USER] You said: {command}")
                     
                     # Check for exit commands
                     if any(word in command.lower() for word in ['exit', 'quit', 'stop', 'goodbye']):
-                        print("👋 Exiting...")
+                        print("[EXIT] Exiting...")
                         speak("Goodbye! Have a great day!")
                         break
                     
                     # Process command
                     response = process_command(command)
-                    print(f"🤖 Assistant: {response}")
+                    print(f"[ASSISTANT] {response}")
                     speak(response)
                 else:
-                    print("🔇 No speech detected or recognition failed.")
+                    print("[WARN] No speech detected or recognition failed.")
                 
-                print("\n🎤 Listening for wake word 'ZEN'...\n")
+                print("\n[LISTENING] Listening for wake word 'ZEN'...\n")
                 
     except KeyboardInterrupt:
-        print("\n🛑 Stopping assistant...")
+        print("\n[STOP] Stopping assistant...")
     finally:
         recorder.stop()
         recorder.delete()
@@ -295,7 +295,7 @@ def process_command(command):
     
     # Try AI response for everything else
     if USE_AI:
-        print("🤖 Thinking...")
+        print("[AI] Thinking...")
         ai_response = get_ai_response(command)
         if ai_response:
             return ai_response
