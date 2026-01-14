@@ -4,43 +4,43 @@ AI Assistant Zen is a desktop-based voice assistant that integrates speech recog
 
 Features
 
-Real-time speech recognition using microphone input
+1)Real-time speech recognition using microphone input
 
-Text-to-speech output with configurable voice and rate
+2)Text-to-speech output with configurable voice and rate
 
-AI-powered responses using Google Gemini for conversational intelligence
+3)AI-powered responses using Google Gemini for conversational intelligence
 
-Optional wake-word detection using Porcupine
+4)Optional wake-word detection using Porcupine
 
-Fast local command handling for time, date, and utility queries
+5)Fast local command handling for time, date, and utility queries
 
-Secure user authentication with password hashing
+6)Secure user authentication with password hashing
 
-SQLite database for user management and session tracking
+7)SQLite database for user management and session tracking
 
-Multi-threaded execution to prevent GUI blocking
+8)Multi-threaded execution to prevent GUI blocking
 
-Environment-based configuration using .env files
+9)Environment-based configuration using .env files
 
-Feature flags to enable or disable AI and wake-word functionality
+10)Feature flags to enable or disable AI and wake-word functionality
 
 Tech Stack
 
-Python
+1)Python
 
-CustomTkinter (GUI)
+2)CustomTkinter (GUI)
 
-SpeechRecognition
+3)SpeechRecognition
 
-pyttsx3 (TTS)
+4)pyttsx3 (TTS)
 
-Google Gemini API
+5)Google Gemini API
 
-SQLite
+6)SQLite
 
-Porcupine (Wake-word detection)
+7)Porcupine (Wake-word detection)
 
-threading, dotenv, hashlib
+8)threading, dotenv, hashlib
 
 Project Structure
 .
