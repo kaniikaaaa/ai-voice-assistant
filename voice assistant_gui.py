@@ -202,21 +202,25 @@ class AssistantApp(ctk.CTk):
         # HIGH-001 FIX: Signal the assistant core to stop
         request_stop()
         
-        # Update UI to show stopping
+        # Update UI to show stopping with helpful message
         if hasattr(self, 'status_label'):
-            self.status_label.configure(text="⏹️ Stopping assistant...\nPlease wait...")
+            self.status_label.configure(
+                text="⏹️ Stopping assistant...\nWaiting for current operation to finish...\n(This may take up to 12 seconds)"
+            )
         if hasattr(self, 'activity_label'):
             self.activity_label.configure(text="● STOPPING", text_color="orange")
         if hasattr(self, 'stop_button'):
-            self.stop_button.configure(state="disabled", text="Stopping...")
+            self.stop_button.configure(state="disabled", text="Stopping... Please wait")
         
-        # Update GUI
+        # Update GUI to show changes
         self.update()
         
-        # Wait for thread to finish (with timeout)
+        # FIX: Wait for thread to finish (increased timeout for listen() blocking)
         if self.assistant_thread and self.assistant_thread.is_alive():
             print("[GUI] Waiting for assistant thread to terminate...")
-            self.assistant_thread.join(timeout=3.0)  # 3 second timeout
+            # INCREASED timeout from 3.0 to 12.0 seconds
+            # Reason: listen() can block for up to 10 seconds, need time for it to finish
+            self.assistant_thread.join(timeout=12.0)  
             
             if self.assistant_thread.is_alive():
                 print("[GUI WARNING] Thread did not stop gracefully within timeout")
@@ -225,7 +229,7 @@ class AssistantApp(ctk.CTk):
                     "Assistant may still be running in background.\nPlease restart the application if issues persist."
                 )
             else:
-                print("[GUI] Assistant thread terminated successfully")
+                print("[GUI] Assistant thread terminated successfully ✓")
         
         # Clean up thread reference
         self.assistant_thread = None

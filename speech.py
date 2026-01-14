@@ -157,10 +157,10 @@ def speak(text):
 def listen():
     r = sr.Recognizer()
     
-    # Adjust recognizer settings for better performance
+    # FIX: Adjust recognizer settings for better long-sentence handling
     r.energy_threshold = 300  # Minimum audio energy to consider for recording
     r.dynamic_energy_threshold = True  # Automatically adjust to ambient noise
-    r.pause_threshold = 0.8  # Seconds of silence to consider end of phrase
+    r.pause_threshold = 1.5  # INCREASED from 0.8 to 1.5 - allows pauses mid-sentence
     
     try:
         with sr.Microphone() as source:
@@ -170,9 +170,9 @@ def listen():
             print("[INFO] Adjusting for background noise...")
             r.adjust_for_ambient_noise(source, duration=1)
             
-            # Listen with longer timeout and phrase limit
+            # FIX: Increased phrase_time_limit for longer questions
             print("[READY] Speak your command...")
-            audio = r.listen(source, timeout=10, phrase_time_limit=15)
+            audio = r.listen(source, timeout=10, phrase_time_limit=30)  # Increased from 15 to 30 seconds
             
             print("[PROCESSING] Recognizing speech...")
             text = r.recognize_google(audio)
